@@ -162,7 +162,7 @@ const SignUp = () => {
           onClick={handleGoogleSignUp}
           className="bg-white text-black border border-black px-4 rounded-md w-full flex items-center justify-center gap-x-5"
         >
-          <img src={googleLogo} alt="Google Logo" className="w-6 h-[40px]" />{" "}
+          <img src={googleLogo} alt="Google Logo" className="w-8 h-[40px]" />{" "}
           {/* Google logo */}
           <h1>Sign Up with Google</h1>
         </button>

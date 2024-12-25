@@ -8,7 +8,7 @@ const userSchema = mongoose.Schema(
     isAdmin: { type: Boolean, default: false }, // Admin flag
     otp: { type: String }, // Field to store the OTP
     role: { type: String, default: "user" },
-    otpExpirES: { type: Date }, // Field to store OTP expiration time
+    otpExpires: { type: Date }, // Field to store OTP expiration time
     isVerified: { type: Boolean, default: false },
   },
   {

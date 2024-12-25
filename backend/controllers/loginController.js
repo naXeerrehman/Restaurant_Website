@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken"; // For generating JWT
+import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
@@ -56,7 +56,15 @@ export const verifyLoginOtp = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "User not found" });
 
-    if (Date.now() > user.otpExpires || user.otp !== otp) {
+    console.log("User found:", user); // Debugging line
+
+    if (Date.now() > user.otpExpires || user.otp.toString() !== otp.toString()) {
+      console.log("OTP validation failed:", {
+        receivedOtp: otp,
+        storedOtp: user.otp,
+        expiresAt: user.otpExpires,
+        currentTime: Date.now(),
+      }); // Debugging line
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
@@ -76,6 +84,8 @@ export const verifyLoginOtp = async (req, res) => {
       .status(200)
       .json({ message: "OTP verified successfully", token });
   } catch (error) {
+    console.error("Error verifying OTP:", error);
     return res.status(500).json({ message: "Server error" });
   }
 };
+

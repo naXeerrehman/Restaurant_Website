@@ -4,7 +4,7 @@ import signUpRoutes from "./routes/signUpRoutes.js";
 import loginRoutes from "./routes/loginRoutes.js";
 import userCrudRoutes from "./routes/userCrudRoutes.js";
 import passwordRoutes from "./routes/passwordRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";
+import adminShipRoutes from "./routes/adminShipRoutes.js";
 import connectDB from "./db.js";
 import corsMiddleware from "./MiddleWares/cors.js";
 dotenv.config();
@@ -36,7 +36,7 @@ app.use("/api", userCrudRoutes); // You can prefix your routes with /api or any 
 // Use the password routes
 app.use("/api/auth", passwordRoutes);
 
-app.use("/api/admin", adminRoutes);
+app.use("/api/admin", adminShipRoutes);
 
 // Start server
 app.listen(PORT, () => {

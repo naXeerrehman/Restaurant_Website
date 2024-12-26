@@ -3,7 +3,7 @@ import {
   verifyAdmin,
   getRegisteredUsers,
   authorizeUser,
-} from "../controllers/adminController.js";
+} from "../controllers/adminShip.js";
 
 const router = express.Router();
 

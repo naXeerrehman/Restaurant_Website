@@ -4,6 +4,7 @@ import crypto from "crypto";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import { OAuth2Client } from "google-auth-library";
+import jwt from "jsonwebtoken"; // Import jwt
 
 // Load environment variables
 dotenv.config();
@@ -15,6 +16,14 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER, // Your email
     pass: process.env.EMAIL_PASS, // Your app password
   },
+});
+
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("Transporter verification failed:", error);
+  } else {
+    console.log("Transporter is ready to send emails");
+  }
 });
 
 // Temporary in-memory store for OTPs
@@ -29,6 +38,14 @@ export const registerUser = async (req, res) => {
   }
 
   try {
+    // Check if the user already exists in the database
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res
+        .status(409)
+        .json({ message: "User already registered. Please log in." });
+    }
+
     // Check if OTP already exists for this email (if user already requested OTP)
     if (tempOtpStore[email]) {
       return res
@@ -130,8 +147,16 @@ export const verifyOtp = async (req, res) => {
     // Clear the OTP data after successful registration
     delete tempOtpStore[email];
 
+    // Generate and send JWT token
+    const token = jwt.sign(
+      { userId: newUser._id, email: newUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
     return res.status(200).json({
       message: "OTP verified successfully. You are now fully registered!",
+      token, // Send the token in the response
     });
   } catch (error) {
     console.error("Error verifying OTP:", error);
@@ -161,10 +186,10 @@ export const googleSignUp = async (req, res) => {
     // Check if the user already exists in the database
     let user = await User.findOne({ email });
     if (user) {
-      // If the user already exists, respond with a message
+      // If the user already exists, respond with the new message
       return res
         .status(409)
-        .json({ message: "User already exists. Please log in." });
+        .json({ message: "User already registered. Please log in." });
     }
 
     // If not, create a new user
@@ -177,7 +202,18 @@ export const googleSignUp = async (req, res) => {
     // Save the new user
     await user.save();
 
-    return res.status(201).json({ message: "Google sign-up successful", user });
+    // Generate and send JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    return res.status(201).json({
+      message: "Google sign-up successful",
+      user,
+      token, // Send the token in the response
+    });
   } catch (error) {
     console.error("Error verifying Google token:", error);
     return res.status(401).json({ message: "Invalid token" });

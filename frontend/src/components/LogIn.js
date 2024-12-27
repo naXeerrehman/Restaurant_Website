@@ -20,6 +20,21 @@ const Login = () => {
     }
   }, [navigate]);
 
+  localStorage.removeItem("email");
+  localStorage.removeItem("token");
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("Token in localStorage:", token);
+    if (token) {
+      navigate("/"); // If token exists, redirect to the homepage
+    }
+  }, [navigate]);
+
+  if (localStorage.getItem("token")) {
+    return null; // Or a loader, if needed
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {

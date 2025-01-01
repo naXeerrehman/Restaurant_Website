@@ -4,7 +4,6 @@ import Navbar from "./components/Navbar";
 import SignUp from "./components/SignUp";
 import LogIn from "./components/LogIn";
 import LogOut from "./components/LogOut";
-import VerifyOtp from "./components/VerifyOtp";
 import ResetPassword from "./components/ResetPassword";
 import NewPassword from "./components/NewPassword";
 import RegisteredUsers from "./components/RegisteredUsers";
@@ -16,7 +15,6 @@ function App() {
       <Route path="/SignUp" element={<SignUp />} />
       <Route path="/LogIn" element={<LogIn />} />
       <Route path="/LogOut" element={<LogOut />} />
-      <Route path="/VerifyOtp" element={<VerifyOtp />} />
       <Route path="/UpdateUser" element={<UpdateUser />} />
       <Route path="/ResetPassword" element={<ResetPassword />} />
       <Route path="/NewPassword/:token" element={<NewPassword />} />

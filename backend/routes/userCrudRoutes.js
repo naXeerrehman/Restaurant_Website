@@ -5,7 +5,7 @@ import {
   deleteUser,
   toggleAdminStatus,
   removeAdmin,
-} from "../controllers/crudController.js";
+} from "../controllers/userCrud.js";
 // import { authenticate } from '../middleware/authenticate.js'; // Ensure you have an authentication middleware
 
 const router = express.Router();

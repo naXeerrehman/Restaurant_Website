@@ -1,4 +1,4 @@
-import User from "../models/user.js";
+import User from "../models/user.js"; // Assume admins are part of the User model with an "isAdmin" flag
 import nodemailer from "nodemailer";
 import crypto from "crypto";
 import dotenv from "dotenv";
@@ -29,16 +29,42 @@ transporter.verify((error, success) => {
 // Temporary in-memory store for OTPs
 let tempOtpStore = {}; // This will store OTPs temporarily
 
+// Function to send a notification email to all admins
+const notifyAdmins = async (newUser) => {
+  try {
+    // Fetch all admins dynamically from the database
+    const admins = await User.find({ isAdmin: true }); // Query all users with the admin role
+
+    if (admins.length === 0) {
+      console.warn("No admins found to notify.");
+      return;
+    }
+
+    // Prepare email addresses of all admins
+    const adminEmails = admins.map((admin) => admin.email);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER, // Your email
+      to: adminEmails, // Array of admin emails
+      subject: "New User Registered",
+      text: `A new user has registered.\n\nName: ${newUser.name}\nEmail: ${newUser.email}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Admins notified of new user registration");
+  } catch (error) {
+    console.error("Error notifying admins:", error);
+  }
+};
+
 export const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
 
-  // Validate request body
   if (!name || !email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   try {
-    // Check if the user already exists in the database
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
@@ -46,33 +72,26 @@ export const registerUser = async (req, res) => {
         .json({ message: "User already registered. Please log in." });
     }
 
-    // Check if OTP already exists for this email (if user already requested OTP)
     if (tempOtpStore[email]) {
       return res
         .status(400)
         .json({ message: "OTP already sent. Please verify it." });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10); // Hash the password with a salt round of 10
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = crypto.randomInt(100000, 999999);
 
-    // Generate OTP
-    const otp = crypto.randomInt(100000, 999999); // Generates a random 6-digit OTP
-
-    // Store the OTP temporarily in memory (or use a more persistent store if needed)
     tempOtpStore[email] = {
       otp,
       hashedPassword,
       name,
       expires: Date.now() + 3600000,
-    }; // OTP expires in 1 hour
+    };
 
-    // Send OTP email
     await sendOTP(email, otp);
 
     return res.status(201).json({
-      message:
-        "OTP has been sent to your email. Please verify to complete registration.",
+      message: "Please enter OTP to verify your email",
     });
   } catch (error) {
     console.error("Error registering user:", error);
@@ -83,7 +102,7 @@ export const registerUser = async (req, res) => {
 // Generate and send OTP
 const sendOTP = async (email, otp) => {
   const mailOptions = {
-    from: process.env.EMAIL_USER, // Your email
+    from: process.env.EMAIL_USER,
     to: email,
     subject: "Your OTP Code",
     text: `Your OTP code is: ${otp}`,
@@ -93,61 +112,46 @@ const sendOTP = async (email, otp) => {
 };
 
 export const verifyOtp = async (req, res) => {
-  const { email, otp } = req.body; // 'name' is already stored in tempOtpStore
+  const { email, otp } = req.body;
 
   try {
-    // Check if the OTP exists for the provided email
     const otpData = tempOtpStore[email];
-    console.log(`OTP Data for ${email}:`, otpData); // Debugging line to print OTP data
-
     if (!otpData) {
       return res
         .status(400)
         .json({ message: "OTP not found. Please request a new one." });
     }
 
-    // Check if OTP is expired
     const isExpired = Date.now() > otpData.expires;
-    console.log(
-      `OTP expiration check for ${email}: ${isExpired ? "Expired" : "Valid"}`
-    ); // Debugging line
     if (isExpired) {
-      // Clear OTP after expiry
-      delete tempOtpStore[email]; // Remove the OTP data after expiry
+      delete tempOtpStore[email];
       return res
         .status(400)
         .json({ message: "OTP expired. Please request a new one." });
     }
 
-    // Ensure OTP is in the same format (string) for comparison
-    const receivedOtp = otp.toString(); // Ensure the received OTP is a string
-    const storedOtp = otpData.otp.toString(); // Ensure the stored OTP is a string
+    const receivedOtp = otp.toString();
+    const storedOtp = otpData.otp.toString();
 
-    console.log(`Comparing OTP: ${receivedOtp} with stored OTP: ${storedOtp}`); // Debugging line
-
-    // Verify OTP
     if (receivedOtp !== storedOtp) {
       return res.status(400).json({ message: "Invalid OTP." });
     }
 
-    // OTP is valid and not expired, proceed with user registration
     const { hashedPassword, name } = otpData;
 
-    // Create the user in the database
     const newUser = new User({
-      name: name, // Include the 'name' field from OTP data
-      email: email,
-      password: hashedPassword, // Store the hashed password
-      isVerified: true, // Set user as verified
+      name,
+      email,
+      password: hashedPassword,
+      isVerified: true,
     });
 
-    // Save the user in the database
     await newUser.save();
-
-    // Clear the OTP data after successful registration
     delete tempOtpStore[email];
 
-    // Generate and send JWT token
+    // Notify all admins dynamically
+    notifyAdmins(newUser);
+
     const token = jwt.sign(
       { userId: newUser._id, email: newUser.email },
       process.env.JWT_SECRET,
@@ -156,15 +160,13 @@ export const verifyOtp = async (req, res) => {
 
     return res.status(200).json({
       message: "OTP verified successfully. You are now fully registered!",
-      token, // Send the token in the response
+      token,
     });
   } catch (error) {
     console.error("Error verifying OTP:", error);
     return res.status(500).json({ message: "Server error" });
   }
 };
-
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const googleSignUp = async (req, res) => {
   const { token } = req.body; // The token from the frontend

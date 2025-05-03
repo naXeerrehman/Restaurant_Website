@@ -1,22 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // Correct import for jwt-decode
+import React, { useState, useEffect } from "react";
+import { FaBars, FaTimes, FaHome, FaAddressCard } from "react-icons/fa";
+import { MdAdminPanelSettings } from "react-icons/md";
+import { RiLogoutBoxFill } from "react-icons/ri";
+import { GiChickenOven } from "react-icons/gi";
+import { IoLogIn } from "react-icons/io5";
+import { NavLink } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import { FaPhoneVolume } from "react-icons/fa6";
+import Hinkley_Beanery from "../assets/Hinckley_Beanery.png";
 
 const Navbar = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [showConfirmLogout, setShowConfirmLogout] = useState(false); // State to show confirmation dialog
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token"); // Check if token exists for logged-in status
+    const token = localStorage.getItem("token");
 
     if (token) {
       setIsLoggedIn(true);
       try {
         const decodedToken = jwtDecode(token);
-        console.log("Decoded Token:", decodedToken); // Log the decoded token
-        setIsAdmin(decodedToken.isAdmin); // Assumes the token has 'isAdmin' property
+        console.log("Decoded Token:", decodedToken);
+        setIsAdmin(decodedToken.isAdmin);
       } catch (error) {
         console.error("Error decoding token:", error);
       }
@@ -25,125 +31,149 @@ const Navbar = () => {
     }
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token"); // Clear token on logout
-    setIsLoggedIn(false);
-    setIsAdmin(false); // Reset admin state on logout
-    navigate("/LogIn");
+  const handleLinkClick = () => {
+    if (window.innerWidth < 1024) {
+      setIsMenuOpen(false);
+    }
   };
 
-  const handleConfirmLogout = () => {
-    setShowConfirmLogout(true); // Show the confirmation dialog
+  const handleMouseEnter = () => {
+    setIsMenuOpen(true);
   };
 
-  const handleCancelLogout = () => {
-    setShowConfirmLogout(false); // Close the confirmation dialog
+  const handleMouseLeave = () => {
+    setIsMenuOpen(false);
   };
 
   return (
-    <>
-      {/* Navbar */}
-      <div className="bg-black text-white flex justify-between px-5 py-2">
-        <div className="font-semibold">Auth App</div>
-        <div className="flex gap-x-3 items-center">
-          {isLoggedIn && isAdmin && (
-            <>
-              <Link to="/RegisteredUsers" className="border px-1 rounded-md">
-                Registered users
-              </Link>
-            </>
-          )}
-          <Link to="/SignUp" className="border px-1 rounded-md">
-            Sign up
-          </Link>
-          {isLoggedIn ? (
+    <nav
+      className="sticky top-0 z-50 bg-red-600 text-white w-full"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex-shrink-0 flex items-center">
+            <NavLink to="/" className="flex items-center">
+              <img
+                src={Hinkley_Beanery || "/placeholder.svg"}
+                alt="Hinkley Beanery"
+                className="h-[100px] w-auto"
+              />
+            </NavLink>
+          </div>
+          <div className="hidden lg:flex lg:items-center lg:space-x-4">
+            <NavLinks
+              isLoggedIn={isLoggedIn}
+              isAdmin={isAdmin}
+              handleLinkClick={handleLinkClick}
+            />
+          </div>
+          <div className="flex lg:hidden">
             <button
-              onClick={handleConfirmLogout}
-              className="border px-1 rounded-md"
+              type="button"
+              className="inline-flex items-center justify-center p-2 rounded-md text-white hover:text-white "
+              aria-controls="mobile-menu"
+              aria-expanded="false"
+              onMouseEnter={() => setIsMenuOpen(true)}
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              Log out
+              <span className="sr-only">Open main menu</span>
+              {isMenuOpen ? (
+                <FaTimes className="block h-6 w-6" aria-hidden="true" />
+              ) : (
+                <FaBars className="block h-6 w-6" aria-hidden="true" />
+              )}
             </button>
-          ) : (
-            <Link to="/LogIn" className="border px-1 rounded-md">
-              Log in
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {/* Confirmation Dialog for Logout */}
-      {showConfirmLogout && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
-          <div className="bg-white p-5 rounded-lg">
-            <h3 className="text-center mb-4">
-              Are you sure you want to log out?
-            </h3>
-            <div className="flex justify-between">
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 text-white py-1 px-4 rounded"
-              >
-                Yes, Log Out
-              </button>
-              <button
-                onClick={handleCancelLogout}
-                className="bg-gray-500 text-white py-1 px-4 rounded"
-              >
-                Cancel
-              </button>
-            </div>
           </div>
         </div>
-      )}
-
-      {/* Functionalities Section */}
-      <div className="flex flex-col">
-        <div className="text-center font-semibold mt-5 mb-2">
-          Authentication App With The Functionalities Of
-        </div>
-        <Link
-          to="/SignUp"
-          className="border-b border-black w-[150px] mx-auto mb-2 text-center font-semibold"
-        >
-          Register User
-        </Link>
-        <Link
-          to="/LogIn"
-          className="border-b border-black w-[150px] mx-auto mb-2 text-center font-semibold"
-        >
-          Login User
-        </Link>
-        <Link
-          to="/LogOut"
-          className="border-b border-black w-[150px] mx-auto mb-2 text-center font-semibold"
-        >
-          Log Out User
-        </Link>
-        <Link
-          to="/ResetPassword"
-          className="border-b border-black w-[150px] mx-auto mb-2 text-center font-semibold"
-        >
-          Reset Password
-        </Link>
-        <Link
-          to="/RegisteredUsers"
-          className="border-b border-black w-[150px] mx-auto mb-2 text-center font-semibold"
-        >
-          Update User
-        </Link>
-        <Link
-          to="/RegisteredUsers"
-          className="border-b border-black w-[150px] mx-auto mb-2 text-center font-semibold"
-        >
-          Delete User
-        </Link>
-        <Link
-          to=""
-          className="border-b border-black w-[200px] mx-auto text-center font-semibold"
-        >
-          Two Factor Authentication
-        </Link>
       </div>
+
+      <div
+        className={`${isMenuOpen ? "block" : "hidden"} lg:hidden`}
+        id="mobile-menu"
+      >
+        <div className="px-2 pt-2 pb-3 space-y-1">
+          <NavLinks
+            isLoggedIn={isLoggedIn}
+            isAdmin={isAdmin}
+            handleLinkClick={handleLinkClick}
+          />
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+const NavLinks = ({ isLoggedIn, isAdmin, handleLinkClick }) => {
+  const linkClass =
+    "hover:font-bold  text-center text-lg md:text-2xl text-white block px-1 py-1 rounded-md font-medium";
+  const activeLinkClass =
+    "border border-2 w-[150px] mx-auto text-center  text-lg text-white block px-1 py-2 rounded-md font-medium";
+
+  return (
+    <>
+      <NavLink
+        to="/"
+        className={({ isActive }) => (isActive ? activeLinkClass : linkClass)}
+        onClick={handleLinkClick}
+      >
+        <FaHome className="inline-block mr-2" />
+        Home
+      </NavLink>
+      {/* {isLoggedIn && isAdmin && ( */}
+      <NavLink
+        to="/AdminPanel"
+        className={({ isActive }) => (isActive ? activeLinkClass : linkClass)}
+        onClick={handleLinkClick}
+      >
+        <MdAdminPanelSettings className="inline-block mr-2" />
+        Admin Panel
+      </NavLink>
+      {/* )} */}
+      <NavLink
+        to="/Shop"
+        className={({ isActive }) => (isActive ? activeLinkClass : linkClass)}
+        onClick={handleLinkClick}
+      >
+        <GiChickenOven className="inline-block mr-2" />
+        Menu
+      </NavLink>
+      <NavLink
+        to="/About"
+        className={({ isActive }) => (isActive ? activeLinkClass : linkClass)}
+        onClick={handleLinkClick}
+      >
+        <FaAddressCard className="inline-block mr-2" />
+        About
+      </NavLink>
+      <NavLink
+        to="/ContactPage"
+        className={({ isActive }) => (isActive ? activeLinkClass : linkClass)}
+        onClick={handleLinkClick}
+      >
+        <FaPhoneVolume className="inline-block mr-2" />
+        Contact
+      </NavLink>
+      {isLoggedIn ? (
+        <NavLink
+          to="/LogOutPage"
+          className={({ isActive }) => (isActive ? activeLinkClass : linkClass)}
+          onClick={handleLinkClick}
+        >
+          <RiLogoutBoxFill className="inline-block mr-2" />
+          Log out
+        </NavLink>
+      ) : (
+        <NavLink
+          to="/LoginPage"
+          className={({ isActive }) => (isActive ? activeLinkClass : linkClass)}
+          onClick={handleLinkClick}
+        >
+          <IoLogIn className="inline-block mr-2" />
+          Log in
+        </NavLink>
+      )}
     </>
   );
 };

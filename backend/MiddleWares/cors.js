@@ -7,10 +7,12 @@ const corsMiddleware = (app) => {
   // JSON middleware
   app.use(express.json());
 
+  const FRONTEND_URL = process.env.FRONTEND_URL;
+
   // CORS middleware
   app.use(
     cors({
-      origin: "http://localhost:3000", // Your React app's URL
+      origin: `${FRONTEND_URL}`, // Your React app's URL
       credentials: true, // Allow credentials if needed
     })
   );

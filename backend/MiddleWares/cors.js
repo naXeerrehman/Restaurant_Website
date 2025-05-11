@@ -1,19 +1,28 @@
-// middleware.js
 import express from "express";
 import cors from "cors";
 
-// Middleware configuration
 const corsMiddleware = (app) => {
-  // JSON middleware
   app.use(express.json());
 
-  const FRONTEND_URL = process.env.FRONTEND_URL;
+  const allowedOrigins = [
+    process.env.FRONTEND_URL, // From environment variable
+    'https://restaurant-website-xi-three.vercel.app',
+    'http://localhost:3000'
+  ];
 
-  // CORS middleware
   app.use(
     cors({
-      origin: `${FRONTEND_URL}`, // Your React app's URL
-      credentials: true, // Allow credentials if needed
+      origin: (origin, callback) => {
+        // Allow requests with no origin (e.g., mobile apps, Postman)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      credentials: true,
     })
   );
 };

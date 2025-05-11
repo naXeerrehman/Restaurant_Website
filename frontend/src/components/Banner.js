@@ -176,7 +176,8 @@ const Banner = () => {
         {/* Buttons Section */}
         <div className="flex flex-col space-y-6 sm:space-y-6 md:space-y-8 lg:space-y-10 xl:space-y-12 w-full justify-center items-center mt-8 md:mt-5 lg:mt-12 xl:mt-14">
           {/* Book Now Button Section */}
-          <div className="bg-red-600 rounded-md flex justify-center items-center w-[130px] md:w-3/12 md:h-[50px] h-[35px]">
+          <div className
+          ="bg-red-600 rounded-md flex justify-center items-center w-[130px] md:w-3/12 md:h-[50px] h-[35px]">
             {isLoading ? (
               <div className="flex flex-col justify-center items-center text-white">
                 <GiChickenOven className="animate-zoomInOut text-4xl" />

@@ -80,13 +80,13 @@ const Login = () => {
         <img src={FastFood6} alt="FastFood_image" className="w-full h-screen" />
       </div>
       {/* Content */}
-      <div className="relative inset-0 flex items-center justify-center">
+       <div className="relative inset-0 flex items-center justify-center pt-20 md:pt-44 lg:pt-10">
         {!otpSent ? (
           <form
             onSubmit={handleLogin}
-            className="mx-4 w-full p-6 px-6 pt-[80px] md:px-28 lg:px-[370px]"
+           className="w-full max-w-md p-8"
           >
-            <h1 className="text-2xl font-bold bg-red-600 text-white rounded-md py-1 text-center mb-6">
+            <h1 className="text-2xl font-bold bg-red-600 text-white rounded-md py-2 text-center mb-6">
               Login
             </h1>
 
@@ -162,7 +162,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loginLoading}
-              className={`w-full font-bold bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 md:text-2xl${
+              className={`w-full font-bold bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors ${
                 loginLoading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >

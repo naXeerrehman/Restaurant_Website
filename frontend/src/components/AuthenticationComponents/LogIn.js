@@ -139,7 +139,7 @@ const Login = () => {
 
             <div className="text-sm text-gray-600 mb-4">
               <Link
-                to="/ResetPassword"
+                to="/ResetPasswordPage"
                 className="font-semibold text-white md:text-2xl"
               >
                 Forgot Password?

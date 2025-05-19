@@ -40,7 +40,7 @@ const NewPassword = () => {
         setMessage("Password updated successfully! Redirecting to login...");
         setLoading(false);
         setTimeout(() => {
-          navigate("/login"); // Redirect to login page
+          navigate("/loginPage"); // Redirect to login page
         }, 2000);
       } else {
         setMessage(data.message || "Error updating password.");

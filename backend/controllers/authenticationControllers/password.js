@@ -31,7 +31,7 @@ export const resetPassword = async (req, res) => {
     });
 
     // Send password reset email with clickable link to the correct route
-    const resetUrl = `${process.env.FRONTEND_URL}/NewPassword/${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/NewPasswordPage/${resetToken}`;
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
